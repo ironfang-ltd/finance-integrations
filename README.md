@@ -7,18 +7,25 @@ response integrity and the chosen ruleset.
 
 ## Install
 
-Download the wheel or npm tarball and `SHA256SUMS` from the
+Install the TypeScript/JavaScript SDK from
+[npm](https://www.npmjs.com/package/@ironfang/financewolf):
+
+```sh
+npm install @ironfang/financewolf@0.1.0
+```
+
+For Python, download the wheel and `SHA256SUMS` from the
 [v0.1.0 release](https://github.com/ironfang-ltd/financewolf-integrations/releases/tag/v0.1.0).
-Verify the selected file against its SHA-256 entry before installing it.
+Verify the wheel against its SHA-256 entry before installing it:
 
 ```sh
 python3 -m pip install ./ironfang_financewolf-0.1.0-py3-none-any.whl
-npm install ./ironfang-financewolf-0.1.0.tgz
 ```
 
 Python requires 3.10+; the TypeScript/JavaScript client requires Node 20+ ESM.
-Neither package has runtime dependencies. These are GitHub release downloads;
-this release does not claim npm or PyPI registry availability.
+Neither package has runtime dependencies. The npm registry tarball matches the
+reviewed GitHub release asset exactly; anonymous installation and the registry
+signature are verified. PyPI registry availability is not claimed.
 
 Set `FINANCEWOLF_API_KEY` through your secret manager using a key scoped to
 `financewolf:einvoices:write`.
