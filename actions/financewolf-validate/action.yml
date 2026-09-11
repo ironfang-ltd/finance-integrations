@@ -1,0 +1,27 @@
+name: Financewolf UBL validation
+description: Validate selected UBL invoices through the Financewolf API; fail on invalid or indeterminate results.
+inputs:
+  files:
+    description: Newline-separated files, directories or recursive globs within the checked-out workspace.
+    required: true
+  api-key:
+    description: Financewolf platform API key with financewolf:einvoices:write; pass a GitHub secret.
+    required: true
+  ruleset:
+    description: Exact immutable ruleset ID, or latest to detect the document type and use its active ruleset.
+    default: latest
+outputs:
+  results:
+    description: JSON report path. Upload it with actions/upload-artifact in an always() step.
+    value: ${{ steps.validate.outputs.results }}
+runs:
+  using: composite
+  steps:
+    - id: validate
+      shell: bash
+      env:
+        FW_ACTION_FILES: ${{ inputs.files }}
+        FW_ACTION_KEY: ${{ inputs.api-key }}
+        FW_ACTION_RULESET: ${{ inputs.ruleset }}
+        FW_ACTION_SCRIPT: ${{ github.action_path }}/validate.py
+      run: python3 -I "$FW_ACTION_SCRIPT"

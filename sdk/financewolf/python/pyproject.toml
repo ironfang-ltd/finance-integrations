@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ironfang-financewolf"
+version = "0.1.0"
+description = "Financewolf API validation client and CLI for UBL Invoice and CreditNote documents"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{name = "Ironfang Ltd"}]
+dependencies = []
+
+[project.scripts]
+financewolf = "ironfang_financewolf.cli:main"
+
+[project.urls]
+Homepage = "https://ironfang.uk/financewolf"
+Documentation = "https://ironfang.uk/docs/financewolf"
+
+[tool.setuptools.packages.find]
+where = ["src"]

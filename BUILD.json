@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "source_commit": "d355a6227da044699c69c336e9d46480143a7aa8",
+  "dirty": false,
+  "action_allowlist": [
+    "actions/financewolf-validate/action.yml",
+    "actions/financewolf-validate/validate.py",
+    "actions/financewolf-validate/README.md",
+    "actions/financewolf-validate/LICENSE",
+    "sdk/financewolf/python/src/ironfang_financewolf/__init__.py",
+    "sdk/financewolf/python/src/ironfang_financewolf/__main__.py",
+    "sdk/financewolf/python/src/ironfang_financewolf/client.py",
+    "sdk/financewolf/python/src/ironfang_financewolf/cli.py",
+    "sdk/financewolf/python/src/ironfang_financewolf/runner.py",
+    "sdk/financewolf/python/LICENSE",
+    "sdk/financewolf/python/README.md",
+    "sdk/financewolf/python/pyproject.toml",
+    "sdk/financewolf/examples/validate.py",
+    "sdk/financewolf/examples/validate.mjs"
+  ],
+  "published": false
+}
