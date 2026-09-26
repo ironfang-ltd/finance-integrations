@@ -1,15 +1,27 @@
-name: Financewolf UBL validation
-description: Validate selected UBL invoices through the Financewolf API; fail on invalid or indeterminate results.
+name: Ironfang Finance e-invoice validation
+description: Validate UBL, XRechnung and ZUGFeRD / Factur-X invoices through the Ironfang Finance API; fail on invalid or indeterminate results.
 inputs:
   files:
-    description: Newline-separated files, directories or recursive globs within the checked-out workspace.
+    description: Newline-separated files, directories or recursive globs within the checked-out workspace. Directories select *.xml, and with api-version v2 also *.pdf.
     required: true
   api-key:
-    description: Financewolf platform API key with financewolf:einvoices:write; pass a GitHub secret.
+    description: Ironfang platform API key with finance:einvoices:write; pass a GitHub secret.
     required: true
   ruleset:
     description: Exact immutable ruleset ID, or latest to detect the document type and use its active ruleset.
     default: latest
+  api-version:
+    description: v1 validates Peppol BIS Billing 3 UBL. v2 also validates XRechnung and ZUGFeRD / Factur-X, as XML or as a PDF with its embedded XML.
+    default: v1
+  family:
+    description: V2 only. peppol-bis-billing-3, xrechnung or zugferd-facturx; empty detects the family from each document.
+    default: ''
+  variant:
+    description: V2 only. A variant or profile within the family, such as en16931 or extended; empty detects it.
+    default: ''
+  scope:
+    description: V2 only. xml or hybrid_pdf; empty follows the document (a PDF is hybrid_pdf).
+    default: ''
 outputs:
   results:
     description: JSON report path. Upload it with actions/upload-artifact in an always() step.
@@ -23,5 +35,9 @@ runs:
         FW_ACTION_FILES: ${{ inputs.files }}
         FW_ACTION_KEY: ${{ inputs.api-key }}
         FW_ACTION_RULESET: ${{ inputs.ruleset }}
+        FW_ACTION_API: ${{ inputs.api-version }}
+        FW_ACTION_FAMILY: ${{ inputs.family }}
+        FW_ACTION_VARIANT: ${{ inputs.variant }}
+        FW_ACTION_SCOPE: ${{ inputs.scope }}
         FW_ACTION_SCRIPT: ${{ github.action_path }}/validate.py
       run: python3 -I "$FW_ACTION_SCRIPT"

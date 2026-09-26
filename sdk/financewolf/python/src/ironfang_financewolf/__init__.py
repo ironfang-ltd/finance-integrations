@@ -1,4 +1,5 @@
-from .client import Financewolf, FinancewolfError
+from .client import Financewolf
+from .errors import VERSION as __version__
+from .errors import FinancewolfError
 
-__version__ = "0.1.0"
 __all__ = ["Financewolf", "FinancewolfError"]

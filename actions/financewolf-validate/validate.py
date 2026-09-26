@@ -1,4 +1,4 @@
-"""Composite Action adapter for the shared Financewolf Python client/runner."""
+"""Composite Action adapter for the shared Ironfang Finance Python client/runner."""
 
 import os
 import re
@@ -11,7 +11,9 @@ sys.path.insert(
 )
 from ironfang_financewolf import Financewolf, FinancewolfError
 from ironfang_financewolf.client import check_ruleset
+from ironfang_financewolf.v2 import GROUPS
 from ironfang_financewolf.runner import (
+    check_selection,
     empty_report,
     exit_code,
     files_in,
@@ -33,31 +35,61 @@ def annotation(file, message):
 def on_result(item):
     if item["outcome"] == "valid":
         return
-    ids = sorted(
-        {str(f.get("rule_id", "")) for f in item.get("result", {}).get("findings", [])}
-    )
-    ids = [rid for rid in ids if re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", rid)]
+    result = item.get("result", {})
+    ids = sorted({str(f.get("rule_id", "")) for f in result.get("findings", [])})
+    # V2 names PDF/A rules like ISO19005-3:6.2-1.
+    ids = [rid for rid in ids if re.fullmatch(r"[A-Za-z0-9_.:-]{1,100}", rid)]
+    # A V2 verdict names the check groups that failed; a refusal its code.
+    failed = [
+        str(g.get("group"))
+        for g in result.get("groups", [])
+        if g.get("status") == "failed" and g.get("group") in GROUPS
+    ]
+    detail = f" ({', '.join(failed)} failed)" if failed else ""
+    if item.get("problem"):
+        detail = f" ({item['problem']})"
     annotation(
         item["file"],
-        "Financewolf: " + item["outcome"] + ("; " + ", ".join(ids[:20]) if ids else ""),
+        "Ironfang Finance: "
+        + item["outcome"]
+        + detail
+        + ("; " + ", ".join(ids[:20]) if ids else ""),
     )
 
 
 def main():
     workspace = Path(os.environ.get("GITHUB_WORKSPACE", ".")).resolve()
-    report = empty_report()
+    api = os.environ.get("FW_ACTION_API") or "v1"
+    report = empty_report(api)
     try:
         ruleset = os.environ.get("FW_ACTION_RULESET", "latest")
         check_ruleset(ruleset)
+        selectors = check_selection(
+            api,
+            os.environ.get("FW_ACTION_FAMILY") or None,
+            os.environ.get("FW_ACTION_VARIANT") or None,
+            os.environ.get("FW_ACTION_SCOPE") or None,
+        )
         client = Financewolf(os.environ.get("FW_ACTION_KEY", ""))
-        files = files_in(workspace, os.environ.get("FW_ACTION_FILES", "").splitlines())
-        run_files(client, files, workspace, ruleset, report=report, on_result=on_result)
+        files = files_in(
+            workspace, os.environ.get("FW_ACTION_FILES", "").splitlines(), api
+        )
+        run_files(
+            client,
+            files,
+            workspace,
+            ruleset,
+            report=report,
+            on_result=on_result,
+            api=api,
+            selectors=selectors,
+        )
     except (FinancewolfError, OSError) as exc:
         report["errors"] += 1
         report["error"] = (
             exc.code if isinstance(exc, FinancewolfError) else "input_read_failed"
         )
-        annotation("", "Financewolf: " + report["error"])
+        annotation("", "Ironfang Finance: " + report["error"])
     output = temporary_report(report)
     if os.environ.get("GITHUB_OUTPUT"):
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as target:

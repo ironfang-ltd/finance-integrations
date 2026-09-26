@@ -8,6 +8,6 @@ try {
   console.log(JSON.stringify({ outcome: result.outcome, ruleset: result.ruleset.id, sha256: result.input.sha256 }));
   process.exitCode = result.outcome === 'valid' ? 0 : 1;
 } catch (error) {
-  console.error(error instanceof FinancewolfError ? error.message : 'Financewolf: input unavailable');
+  console.error(error instanceof FinancewolfError ? error.message : 'Ironfang Finance: input unavailable');
   process.exitCode = 2;
 }

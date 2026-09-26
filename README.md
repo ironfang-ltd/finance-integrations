@@ -1,9 +1,11 @@
 # Financewolf integrations
 
-Official Financewolf validation SDKs, Python CLI and GitHub Action, version 0.1.0.
-They submit exact UBL Invoice or CreditNote bytes to the Financewolf API. PHIVE
-and the registered validation artefacts determine the outcome; clients check
-response integrity and the chosen ruleset.
+Official Ironfang Finance (Financewolf) validation SDKs, Python CLI and GitHub
+Action, version 0.2.0. They submit exact invoice bytes to the Ironfang Finance
+API: UBL Peppol BIS Billing 3 through V1, and through V2 also XRechnung 3.0.2
+(UBL or CII) and ZUGFeRD 2.5.2 / Factur-X 1.09.2 as XML or as a PDF with its
+embedded invoice XML. The registered validation artefacts determine the
+outcome; clients check response integrity and the chosen ruleset.
 
 ## Install
 
@@ -11,28 +13,31 @@ Install the TypeScript/JavaScript SDK from
 [npm](https://www.npmjs.com/package/@ironfang/financewolf):
 
 ```sh
-npm install @ironfang/financewolf@0.1.0
+npm install @ironfang/financewolf
 ```
 
+The npm registry carries 0.1.0 until 0.2.0 is published there; 0.2.0 is also a
+release asset (`npm install ./ironfang-financewolf-0.2.0.tgz`).
+
 For Python, download the wheel and `SHA256SUMS` from the
-[v0.1.0 release](https://github.com/ironfang-ltd/financewolf-integrations/releases/tag/v0.1.0).
+[v0.2.0 release](https://github.com/ironfang-ltd/financewolf-integrations/releases/tag/v0.2.0).
 Verify the wheel against its SHA-256 entry before installing it:
 
 ```sh
-python3 -m pip install ./ironfang_financewolf-0.1.0-py3-none-any.whl
+python3 -m pip install ./ironfang_financewolf-0.2.0-py3-none-any.whl
 ```
 
 Python requires 3.10+; the TypeScript/JavaScript client requires Node 20+ ESM.
 Neither package has runtime dependencies. The npm registry tarball matches the
 reviewed GitHub release asset exactly; anonymous installation and the registry
-signature are verified. PyPI registry availability is not claimed.
+signature are verified for 0.1.0. PyPI registry availability is not claimed.
 
 Set `FINANCEWOLF_API_KEY` through your secret manager using a key scoped to
-`financewolf:einvoices:write`.
+`finance:einvoices:write`.
 
 ```sh
 financewolf validate 'invoices/**/*.xml' \
-  --ruleset fwrs_bis3_billing_invoice_2026_5_r3 \
+  --ruleset fwrs_bis3_billing_invoice_2026_5_r5 \
   --output invoice-results.json
 ```
 
@@ -41,9 +46,19 @@ and 2 means an input/configuration/service or response-integrity error. The
 `financewolf` validation CLI is separate from the offline `financewolf-verify`
 signed-report verifier.
 
+V2 takes `--api v2`, with `--family`, `--variant` and `--scope` to narrow the
+detected format; a directory picks up PDFs as well as XML:
+
+```sh
+financewolf validate invoices/ --api v2 --family zugferd-facturx \
+  --output invoice-results.json
+```
+
 [Python SDK and CLI reference](sdk/financewolf/python/README.md),
 [Python example](sdk/financewolf/examples/validate.py),
-[Node example](sdk/financewolf/examples/validate.mjs).
+[Node example](sdk/financewolf/examples/validate.mjs), and the V2 examples
+[validate-v2.py](sdk/financewolf/examples/validate-v2.py) and
+[validate-v2.mjs](sdk/financewolf/examples/validate-v2.mjs).
 
 ## GitHub Action
 
@@ -58,10 +73,10 @@ jobs:
         with:
           persist-credentials: false
       - id: invoices
-        uses: ironfang-ltd/financewolf-integrations/actions/financewolf-validate@v0.1.0
+        uses: ironfang-ltd/financewolf-integrations/actions/financewolf-validate@v0.2.0
         with:
           files: invoices/**/*.xml
-          ruleset: fwrs_bis3_billing_invoice_2026_5_r3
+          ruleset: fwrs_bis3_billing_invoice_2026_5_r5
           api-key: ${{ secrets.FINANCEWOLF_API_KEY }}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always() && steps.invoices.outputs.results != ''
@@ -73,17 +88,21 @@ jobs:
 
 Pin the Financewolf Action to the full commit SHA in the release notes for
 reproducible use. CreditNote has its own ruleset, for example
-`fwrs_bis3_billing_creditnote_2026_5_r3`. The compatible `latest` default detects
+`fwrs_bis3_billing_creditnote_2026_5_r5`. The compatible `latest` default detects
 the document type and follows its active ruleset. The Action loads the bundled
 Python client without installing dependencies; keep this repository's directory
 structure intact. See the [Action reference](actions/financewolf-validate/README.md)
-for file boundaries, outputs and secure workflow guidance.
+for file boundaries, outputs and secure workflow guidance. Set
+`api-version: v2` (with `family`, `variant` and `scope` if needed) to validate
+XRechnung and ZUGFeRD / Factur-X, including PDFs.
 
 ## Behaviour and provenance
 
-Requests are limited to 5 MiB XML, 4 MiB response and a default 30-second timeout.
-There are no automatic retries or idempotency keys; repeat calls can be billable,
-and a timeout does not undo work already accepted. Keys belong in secrets, never
+Requests are limited to 5 MiB XML, 4 MiB response and a default 30-second timeout;
+a V2 PDF may be up to 20 MiB with a 45-second default. There are no automatic
+retries. V2 calls accept an idempotency key, so a repeated call replays the
+first result instead of charging again; without one, repeat calls can be
+billable, and a timeout does not undo work already accepted. Keys belong in secrets, never
 in command arguments. JSON reports can contain invoice information: restrict
 access and retention. Annotations print bounded rule IDs rather than invoice text.
 

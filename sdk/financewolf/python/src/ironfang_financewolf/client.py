@@ -1,4 +1,4 @@
-"""Bounded HTTPS client. Financewolf/PHIVE alone determines invoice validity."""
+"""Bounded HTTPS client. Ironfang Finance/PHIVE alone determines invoice validity."""
 
 import hashlib
 import json
@@ -8,26 +8,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-API = "https://api.ironfang.uk/financewolf/v1/einvoices"
-MAX_XML = 5 << 20
-MAX_RESPONSE = 4 << 20
+from .errors import VERSION, FinancewolfError, NoRedirect
+from .v2 import MAX_RESPONSE, MAX_XML, V2Methods
+
+API = "https://api.ironfang.uk/finance/v1/einvoices"
 LAYERS = ["input", "xml", "xsd", "en16931", "peppol"]
-
-
-class FinancewolfError(Exception):
-    """A client/service failure, never an invalid invoice verdict."""
-
-    def __init__(self, code, *, status=0):
-        self.code = code
-        self.status = status
-        super().__init__(
-            f"Financewolf: {code}" + (f" (HTTP {status})" if status else "")
-        )
-
-
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None
 
 
 def check_ruleset(ruleset):
@@ -78,8 +63,16 @@ def check_result(result, raw, ruleset):
     return result
 
 
-class Financewolf:
-    def __init__(self, api_key, *, timeout=30, opener=None):
+class Financewolf(V2Methods):
+    """The V1 methods are unchanged; ``V2Methods`` adds the ``*_v2`` ones.
+
+    ``timeout`` applies to every request. Left unset, it is 30 seconds, and
+    45 for a V2 PDF validation, whose server-side deadline is 30 seconds.
+    """
+
+    def __init__(self, api_key, *, timeout=None, opener=None):
+        self._timeout_explicit = timeout is not None
+        timeout = 30 if timeout is None else timeout
         if (
             not isinstance(api_key, str)
             or not api_key
@@ -112,7 +105,7 @@ class Financewolf:
             headers={
                 "Authorization": "Bearer " + self._key,
                 "Content-Type": "application/xml",
-                "User-Agent": "Financewolf-Python/0.1.0",
+                "User-Agent": "Financewolf-Python/" + VERSION,
                 "Accept": "application/json",
             },
         )
