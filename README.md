@@ -13,11 +13,8 @@ Install the TypeScript/JavaScript SDK from
 [npm](https://www.npmjs.com/package/@ironfang/financewolf):
 
 ```sh
-npm install @ironfang/financewolf
+npm install @ironfang/financewolf@0.2.0
 ```
-
-The npm registry carries 0.1.0 until 0.2.0 is published there; 0.2.0 is also a
-release asset (`npm install ./ironfang-financewolf-0.2.0.tgz`).
 
 For Python, download the wheel and `SHA256SUMS` from the
 [v0.2.0 release](https://github.com/ironfang-ltd/financewolf-integrations/releases/tag/v0.2.0).
@@ -30,7 +27,7 @@ python3 -m pip install ./ironfang_financewolf-0.2.0-py3-none-any.whl
 Python requires 3.10+; the TypeScript/JavaScript client requires Node 20+ ESM.
 Neither package has runtime dependencies. The npm registry tarball matches the
 reviewed GitHub release asset exactly; anonymous installation and the registry
-signature are verified for 0.1.0. PyPI registry availability is not claimed.
+signature are verified. PyPI registry availability is not claimed.
 
 Set `FINANCEWOLF_API_KEY` through your secret manager using a key scoped to
 `finance:einvoices:write`.
