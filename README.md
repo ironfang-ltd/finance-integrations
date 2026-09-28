@@ -9,20 +9,25 @@ outcome; clients check response integrity and the chosen ruleset.
 
 ## Install
 
-Download the packages and `SHA256SUMS` from the
-[v0.2.1 release](https://github.com/ironfang-ltd/financewolf-integrations/releases/tag/v0.2.1)
-and verify each against its SHA-256 entry before installing it:
+The TypeScript client is on npm:
 
 ```sh
-npm install ./ironfang-financewolf-0.2.1.tgz
+npm install @ironfang/financewolf@0.2.1
+```
+
+The Python client and the release files are on the
+[v0.2.1 release](https://github.com/ironfang-ltd/financewolf-integrations/releases/tag/v0.2.1);
+verify each against `SHA256SUMS` before installing it (the npm package is the
+same `ironfang-financewolf-0.2.1.tgz`):
+
+```sh
 python3 -m pip install ./ironfang_financewolf-0.2.1-py3-none-any.whl
 ```
 
 0.2.1 calls the API at `api.ironfang.com`, where Ironfang moved on
 28 September 2026. Earlier versions call `api.ironfang.uk`, which now
 redirects to it; the Python client refuses the redirect and the
-TypeScript client loses the API key on it, so upgrade. npm publication of 0.2.1 follows this release; until then
-[npm](https://www.npmjs.com/package/@ironfang/financewolf) has 0.2.0.
+TypeScript client loses the API key on it, so upgrade.
 
 Python requires 3.10+; the TypeScript/JavaScript client requires Node 20+ ESM.
 Neither package has runtime dependencies. Each npm release is published from
