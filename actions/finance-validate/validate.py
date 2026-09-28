@@ -7,12 +7,12 @@ from pathlib import Path
 
 # Resolve beside the trusted Action checkout, not the caller's workspace or PYTHONPATH.
 sys.path.insert(
-    0, str(Path(__file__).resolve().parents[2] / "sdk/financewolf/python/src")
+    0, str(Path(__file__).resolve().parents[2] / "sdk/finance/python/src")
 )
-from ironfang_financewolf import Financewolf, FinancewolfError
-from ironfang_financewolf.client import check_ruleset
-from ironfang_financewolf.v2 import GROUPS
-from ironfang_financewolf.runner import (
+from ironfang_finance import IronfangFinance, IronfangFinanceError
+from ironfang_finance.client import check_ruleset
+from ironfang_finance.v2 import GROUPS
+from ironfang_finance.runner import (
     check_selection,
     empty_report,
     exit_code,
@@ -59,20 +59,20 @@ def on_result(item):
 
 def main():
     workspace = Path(os.environ.get("GITHUB_WORKSPACE", ".")).resolve()
-    api = os.environ.get("FW_ACTION_API") or "v1"
+    api = os.environ.get("FINANCE_ACTION_API") or "v1"
     report = empty_report(api)
     try:
-        ruleset = os.environ.get("FW_ACTION_RULESET", "latest")
+        ruleset = os.environ.get("FINANCE_ACTION_RULESET", "latest")
         check_ruleset(ruleset)
         selectors = check_selection(
             api,
-            os.environ.get("FW_ACTION_FAMILY") or None,
-            os.environ.get("FW_ACTION_VARIANT") or None,
-            os.environ.get("FW_ACTION_SCOPE") or None,
+            os.environ.get("FINANCE_ACTION_FAMILY") or None,
+            os.environ.get("FINANCE_ACTION_VARIANT") or None,
+            os.environ.get("FINANCE_ACTION_SCOPE") or None,
         )
-        client = Financewolf(os.environ.get("FW_ACTION_KEY", ""))
+        client = IronfangFinance(os.environ.get("FINANCE_ACTION_KEY", ""))
         files = files_in(
-            workspace, os.environ.get("FW_ACTION_FILES", "").splitlines(), api
+            workspace, os.environ.get("FINANCE_ACTION_FILES", "").splitlines(), api
         )
         run_files(
             client,
@@ -84,10 +84,10 @@ def main():
             api=api,
             selectors=selectors,
         )
-    except (FinancewolfError, OSError) as exc:
+    except (IronfangFinanceError, OSError) as exc:
         report["errors"] += 1
         report["error"] = (
-            exc.code if isinstance(exc, FinancewolfError) else "input_read_failed"
+            exc.code if isinstance(exc, IronfangFinanceError) else "input_read_failed"
         )
         annotation("", "Ironfang Finance: " + report["error"])
     output = temporary_report(report)

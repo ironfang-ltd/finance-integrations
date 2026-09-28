@@ -1,4 +1,4 @@
-"""API-backed validation CLI. Keys come only from FINANCEWOLF_API_KEY."""
+"""API-backed validation CLI. Keys come only from IRONFANG_API_KEY (or the older FINANCEWOLF_API_KEY)."""
 
 import argparse
 import json
@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 
-from . import Financewolf, FinancewolfError, __version__
+from . import IronfangFinance, IronfangFinanceError, __version__
 from .client import check_ruleset
 from .runner import (
     check_selection,
@@ -21,7 +21,7 @@ from .runner import (
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        prog="financewolf",
+        prog="ironfang-finance",
         description=(
             "Validate invoices through the Ironfang Finance API: UBL through V1, "
             "or with --api v2 also XRechnung and ZUGFeRD / Factur-X, XML or PDF."
@@ -63,12 +63,12 @@ def main(argv=None):
         # Reserve the output before making billable calls, but after selection
         # so a report name matching the glob cannot become an invoice input.
         files = files_in(args.workspace, args.files, args.api)
-        client = Financewolf(os.environ.get("FINANCEWOLF_API_KEY", ""))
+        client = IronfangFinance(os.environ.get("IRONFANG_API_KEY") or os.environ.get("FINANCEWOLF_API_KEY", ""))
         fd = os.open(args.output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    except (OSError, FinancewolfError) as exc:
+    except (OSError, IronfangFinanceError) as exc:
         print(
             str(exc)
-            if isinstance(exc, FinancewolfError)
+            if isinstance(exc, IronfangFinanceError)
             else "Ironfang Finance: output unavailable",
             file=sys.stderr,
         )

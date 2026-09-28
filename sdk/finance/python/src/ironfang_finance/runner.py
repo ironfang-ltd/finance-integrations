@@ -7,7 +7,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from .client import MAX_XML, FinancewolfError
+from .client import MAX_XML, IronfangFinanceError
 from .v2 import FAMILIES, MAX_PDF, SCOPES, VARIANTS
 
 # What a directory selects: V1 validates UBL XML; V2 also takes the
@@ -25,7 +25,7 @@ def files_in(workspace, patterns, api="v1"):
         for match in glob.glob(str(root / pattern.strip()), recursive=True):
             path = Path(match)
             if not path.resolve().is_relative_to(root):
-                raise FinancewolfError("path_outside_workspace")
+                raise IronfangFinanceError("path_outside_workspace")
             candidates = (
                 [c for suffix in SUFFIXES[api] for c in path.rglob(suffix)]
                 if path.is_dir()
@@ -34,14 +34,14 @@ def files_in(workspace, patterns, api="v1"):
             for candidate in candidates:
                 resolved = candidate.resolve()
                 if not resolved.is_relative_to(root):
-                    raise FinancewolfError("path_outside_workspace")
+                    raise IronfangFinanceError("path_outside_workspace")
                 if resolved.is_file():
                     selected.add(resolved)
                     found = True
         if not found:
-            raise FinancewolfError("unmatched_file_pattern")
+            raise IronfangFinanceError("unmatched_file_pattern")
     if not selected:
-        raise FinancewolfError("no_documents_selected")
+        raise IronfangFinanceError("no_documents_selected")
     return sorted(selected)
 
 
@@ -78,13 +78,13 @@ def describe(item):
 def check_selection(api, family=None, variant=None, scope=None):
     """The V2 selectors, refused with V1 (which has none) or when unknown."""
     if api not in SUFFIXES:
-        raise FinancewolfError("invalid_api_version")
+        raise IronfangFinanceError("invalid_api_version")
     if api == "v1" and (family or variant or scope):
-        raise FinancewolfError("v2_selector_with_v1")
+        raise IronfangFinanceError("v2_selector_with_v1")
     if (family and family not in FAMILIES) or (variant and variant not in VARIANTS):
-        raise FinancewolfError("invalid_family_or_variant")
+        raise IronfangFinanceError("invalid_family_or_variant")
     if scope and scope not in SCOPES:
-        raise FinancewolfError("invalid_scope")
+        raise IronfangFinanceError("invalid_scope")
     return {k: v for k, v in (("family", family), ("variant", variant), ("scope", scope)) if v}
 
 
@@ -117,7 +117,7 @@ def run_files(
             else:
                 result = client.validate(raw, ruleset=ruleset)
             item.update(outcome=result["outcome"], result=result)
-        except FinancewolfError as exc:
+        except IronfangFinanceError as exc:
             item.update(outcome="error", error=exc.code)
             if exc.status:
                 item["http_status"] = exc.status
@@ -147,7 +147,7 @@ def summary(report):
 
 def temporary_report(report):
     fd, name = tempfile.mkstemp(
-        prefix="financewolf-validation-",
+        prefix="finance-validation-",
         suffix=".json",
         dir=os.environ.get("RUNNER_TEMP"),
     )

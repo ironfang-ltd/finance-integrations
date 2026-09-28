@@ -8,7 +8,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from .errors import VERSION, FinancewolfError, NoRedirect
+from .errors import VERSION, IronfangFinanceError, NoRedirect
 from .v2 import MAX_RESPONSE, MAX_XML, V2Methods
 
 API = "https://api.ironfang.com/finance/v1/einvoices"
@@ -19,7 +19,7 @@ def check_ruleset(ruleset):
     if not isinstance(ruleset, str) or not re.fullmatch(
         r"latest|fwrs_[a-z0-9_]{1,150}", ruleset
     ):
-        raise FinancewolfError("invalid_ruleset")
+        raise IronfangFinanceError("invalid_ruleset")
 
 
 def check_result(result, raw, ruleset):
@@ -59,11 +59,11 @@ def check_result(result, raw, ruleset):
     except (KeyError, TypeError):
         valid = False
     if not valid:
-        raise FinancewolfError("invalid_api_response")
+        raise IronfangFinanceError("invalid_api_response")
     return result
 
 
-class Financewolf(V2Methods):
+class IronfangFinance(V2Methods):
     """The V1 methods are unchanged; ``V2Methods`` adds the ``*_v2`` ones.
 
     ``timeout`` applies to every request. Left unset, it is 30 seconds, and
@@ -78,13 +78,13 @@ class Financewolf(V2Methods):
             or not api_key
             or any(ord(c) < 33 or ord(c) > 126 for c in api_key)
         ):
-            raise FinancewolfError("invalid_api_key")
+            raise IronfangFinanceError("invalid_api_key")
         if (
             not isinstance(timeout, (int, float))
             or not math.isfinite(timeout)
             or timeout <= 0
         ):
-            raise FinancewolfError("invalid_timeout")
+            raise IronfangFinanceError("invalid_timeout")
         self._key = api_key
         self._timeout = timeout
         self._opener = opener or urllib.request.build_opener(NoRedirect())
@@ -96,7 +96,7 @@ class Financewolf(V2Methods):
         Pin an immutable, type-specific ruleset for reproducible CI.
         """
         if not isinstance(xml, bytes) or not xml or len(xml) > MAX_XML:
-            raise FinancewolfError("empty_or_oversized_input")
+            raise IronfangFinanceError("empty_or_oversized_input")
         check_ruleset(ruleset)
         request = urllib.request.Request(
             API + "/validate?" + urllib.parse.urlencode({"ruleset": ruleset}),
@@ -105,7 +105,7 @@ class Financewolf(V2Methods):
             headers={
                 "Authorization": "Bearer " + self._key,
                 "Content-Type": "application/xml",
-                "User-Agent": "Financewolf-Python/" + VERSION,
+                "User-Agent": "Ironfang-Finance-Python/" + VERSION,
                 "Accept": "application/json",
             },
         )
@@ -113,11 +113,11 @@ class Financewolf(V2Methods):
             with self._opener.open(request, timeout=self._timeout) as response:
                 body = response.read(MAX_RESPONSE + 1)
                 if response.status != 200 or len(body) > MAX_RESPONSE:
-                    raise FinancewolfError("invalid_api_response")
+                    raise IronfangFinanceError("invalid_api_response")
                 result = json.loads(body)
         except urllib.error.HTTPError as exc:
             exc.close()
-            raise FinancewolfError("api_http_error", status=exc.code) from None
+            raise IronfangFinanceError("api_http_error", status=exc.code) from None
         except (OSError, ValueError, TypeError, RecursionError):
-            raise FinancewolfError("api_request_failed") from None
+            raise IronfangFinanceError("api_request_failed") from None
         return check_result(result, xml, ruleset)

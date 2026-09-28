@@ -15,7 +15,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from .errors import VERSION, FinancewolfError
+from .errors import VERSION, IronfangFinanceError
 
 API_V2 = "https://api.ironfang.com/finance/v2/einvoices"
 MAX_XML = 5 << 20
@@ -92,15 +92,15 @@ def media_type_of(document, media_type=None):
         return "application/xml"
     if media_type == "application/pdf":
         return media_type
-    raise FinancewolfError("invalid_media_type")
+    raise IronfangFinanceError("invalid_media_type")
 
 
 def _check_document(document, media_type):
     if not isinstance(document, bytes) or not document:
-        raise FinancewolfError("empty_or_oversized_input")
+        raise IronfangFinanceError("empty_or_oversized_input")
     media = media_type_of(document, media_type)
     if len(document) > (MAX_PDF if media == "application/pdf" else MAX_XML):
-        raise FinancewolfError("empty_or_oversized_input")
+        raise IronfangFinanceError("empty_or_oversized_input")
     return media
 
 
@@ -118,14 +118,14 @@ def _options(ruleset, family, variant, document_type, scope):
         if value is None:
             continue
         if not ok(value):
-            raise FinancewolfError("invalid_" + name)
+            raise IronfangFinanceError("invalid_" + name)
         options[name] = value
     return options
 
 
 def _check_id(value):
     if not isinstance(value, str) or not _ID.fullmatch(value):
-        raise FinancewolfError("invalid_id")
+        raise IronfangFinanceError("invalid_id")
     return value
 
 
@@ -211,7 +211,7 @@ def check_v2_verdict(result, raw, media_type, options):
     except (KeyError, TypeError, ValueError, AttributeError):
         valid = False
     if not valid:
-        raise FinancewolfError("invalid_api_response")
+        raise IronfangFinanceError("invalid_api_response")
     return result
 
 
@@ -225,7 +225,7 @@ def _check_schema(result, schema, *, key=None, id_value=None):
     except (KeyError, TypeError):
         valid = False
     if not valid:
-        raise FinancewolfError("invalid_api_response")
+        raise IronfangFinanceError("invalid_api_response")
     return result
 
 
@@ -241,7 +241,7 @@ def _check_job(job, job_id=None):
     except (KeyError, TypeError):
         valid = False
     if not valid:
-        raise FinancewolfError("invalid_api_response")
+        raise IronfangFinanceError("invalid_api_response")
     return job
 
 
@@ -272,7 +272,7 @@ def _filters(**values):
         if value is None:
             continue
         if not rules[name](value):
-            raise FinancewolfError("invalid_" + name)
+            raise IronfangFinanceError("invalid_" + name)
         query[name.removeprefix("job_").removeprefix("delivery_")] = str(value)
     return query
 
@@ -301,7 +301,7 @@ class V2Methods:
             url += "?" + urllib.parse.urlencode(query)
         headers = {
             "Authorization": "Bearer " + self._key,
-            "User-Agent": "Financewolf-Python/" + VERSION,
+            "User-Agent": "Ironfang-Finance-Python/" + VERSION,
             "Accept": "application/json",
         }
         if content_type:
@@ -310,21 +310,21 @@ class V2Methods:
             if not isinstance(idempotency_key, str) or not _IDEMPOTENCY.fullmatch(
                 idempotency_key
             ):
-                raise FinancewolfError("invalid_idempotency_key")
+                raise IronfangFinanceError("invalid_idempotency_key")
             headers["Idempotency-Key"] = idempotency_key
         request = urllib.request.Request(url, data=body, method=method, headers=headers)
         try:
             with self._opener.open(request, timeout=timeout or self._timeout) as response:
                 raw = response.read(MAX_RESPONSE + 1)
                 if response.status not in expect or len(raw) > MAX_RESPONSE:
-                    raise FinancewolfError("invalid_api_response")
+                    raise IronfangFinanceError("invalid_api_response")
                 if response.status == 204:
                     return None
                 return json.loads(raw)
         except urllib.error.HTTPError as exc:
             raise _http_error(exc) from None
         except (OSError, ValueError, TypeError, RecursionError):
-            raise FinancewolfError("api_request_failed") from None
+            raise IronfangFinanceError("api_request_failed") from None
 
     # -- validation ---------------------------------------------------------
 
@@ -344,7 +344,7 @@ class V2Methods:
 
         Returns the verdict (``valid`` or ``invalid``) for these exact bytes.
         A refusal (for example ``family_mismatch`` or ``no_embedded_invoice``)
-        or an indeterminate answer raises ``FinancewolfError`` with the API's
+        or an indeterminate answer raises ``IronfangFinanceError`` with the API's
         ``problem`` code. Without ``family``, V2 detects the family from the
         document's own declaration.
         """
@@ -470,7 +470,7 @@ class V2Methods:
     ):
         """Poll a job until it is completed, failed or cancelled.
 
-        Raises ``FinancewolfError("job_wait_timeout")`` when ``timeout``
+        Raises ``IronfangFinanceError("job_wait_timeout")`` when ``timeout``
         seconds pass first; the job carries on. Its verdict is then read
         with ``result_v2(job["operation_id"])``.
         """
@@ -480,7 +480,7 @@ class V2Methods:
             if job["status"] in JOB_TERMINAL:
                 return job
             if clock() + interval > deadline:
-                raise FinancewolfError("job_wait_timeout")
+                raise IronfangFinanceError("job_wait_timeout")
             sleep(interval)
 
     def submit_batch_v2(self, documents, *, idempotency_key=None):
@@ -491,11 +491,11 @@ class V2Methods:
         ``document_type`` and ``scope``.
         """
         if not isinstance(documents, list) or not 1 <= len(documents) <= 100:
-            raise FinancewolfError("invalid_batch")
+            raise IronfangFinanceError("invalid_batch")
         jobs = []
         for item in documents:
             if not isinstance(item, dict) or "document" not in item:
-                raise FinancewolfError("invalid_batch")
+                raise IronfangFinanceError("invalid_batch")
             unknown = set(item) - {
                 "document",
                 "media_type",
@@ -506,7 +506,7 @@ class V2Methods:
                 "scope",
             }
             if unknown:
-                raise FinancewolfError("invalid_batch")
+                raise IronfangFinanceError("invalid_batch")
             jobs.append(
                 _job_body(
                     item["document"],
@@ -619,6 +619,6 @@ def _http_error(exc):
         pass
     finally:
         exc.close()
-    return FinancewolfError(
+    return IronfangFinanceError(
         "api_http_error", status=exc.code, problem=problem, request_id=request_id
     )

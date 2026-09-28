@@ -3,8 +3,8 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ironfang-financewolf"
-version = "0.2.1"
+name = "ironfang-finance"
+version = "1.0.0"
 description = "Ironfang Finance API validation client and CLI: Peppol UBL, XRechnung and ZUGFeRD / Factur-X, as XML or PDF"
 readme = "README.md"
 license = "MIT"
@@ -14,7 +14,8 @@ authors = [{name = "Ironfang Ltd"}]
 dependencies = []
 
 [project.scripts]
-financewolf = "ironfang_financewolf.cli:main"
+ironfang-finance = "ironfang_finance.cli:main"
+financewolf = "ironfang_finance.cli:main"
 
 [project.urls]
 Homepage = "https://ironfang.com/finance"

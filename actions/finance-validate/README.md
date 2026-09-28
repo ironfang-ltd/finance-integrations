@@ -5,12 +5,10 @@ is required; no packages are installed at Action runtime. It calls the Ironfang
 Finance API, with PHIVE as the validator. This is not a Peppol network
 transmitter.
 
-The Action keeps the names it launched under: the `financewolf-validate`
-directory, the `financewolf/action-results/v1` report schema and the
-`FINANCEWOLF_API_KEY` secret in the example. The product is Ironfang Finance;
-nothing else about the Action changed.
+Formerly `financewolf-validate`. The report schema keeps its
+`financewolf/action-results/v1` name so existing report readers work unchanged.
 
-From the reviewed checkout (which includes `sdk/financewolf/python/src`):
+From the reviewed checkout (which includes `sdk/finance/python/src`):
 
 ```yaml
 permissions:
@@ -23,16 +21,16 @@ jobs:
         with:
           persist-credentials: false
       - id: invoices
-        uses: ./actions/financewolf-validate
+        uses: ./actions/finance-validate
         with:
           files: |
             invoices/**/*.xml
           ruleset: fwrs_bis3_billing_invoice_2026_5_r5
-          api-key: ${{ secrets.FINANCEWOLF_API_KEY }}
+          api-key: ${{ secrets.IRONFANG_API_KEY }}
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always() && steps.invoices.outputs.results != ''
         with:
-          name: financewolf-results
+          name: finance-results
           path: ${{ steps.invoices.outputs.results }}
           retention-days: 7
 ```
@@ -54,13 +52,13 @@ the verdict.
 
 ```yaml
       - id: e-invoices
-        uses: ./actions/financewolf-validate
+        uses: ./actions/finance-validate
         with:
           files: |
             e-invoices/
           api-version: v2
           family: zugferd-facturx
-          api-key: ${{ secrets.FINANCEWOLF_API_KEY }}
+          api-key: ${{ secrets.IRONFANG_API_KEY }}
 ```
 
 A V2 PDF may be up to 20 MiB and takes up to 45 seconds; XML stays at 5 MiB.
@@ -102,9 +100,9 @@ Action and SDK allowlist, without service source or repository history. No
 Marketplace listing or external `uses:` URL is claimed before a reviewed public
 release. Copying this directory alone is insufficient: retain the accompanying
 SDK directory from the bundle. The package script and live workflow are described
-in `docs/financewolf-integrations.md` in the service repository.
+in the service repository.
 
 ```sh
-PYTHONPATH=sdk/financewolf/python/src python3 -m unittest discover -s sdk/financewolf/python/tests -v
-python3 -m unittest discover -s actions/financewolf-validate -v
+PYTHONPATH=sdk/finance/python/src python3 -m unittest discover -s sdk/finance/python/tests -v
+python3 -m unittest discover -s actions/finance-validate -v
 ```

@@ -1,28 +1,27 @@
 # Ironfang Finance Python client and CLI
 
-Review candidate **0.2.1**, Python 3.10+, no runtime dependencies. This package
+**ironfang-finance**, Python 3.10+, no runtime dependencies. This package
 calls the Ironfang Finance HTTPS API; PHIVE and registered artefacts determine
 the validation outcome. It performs no local invoice/business-rule validation.
 
-The package keeps the names it launched under: `ironfang-financewolf`, the
-`Financewolf` class, the `financewolf` command and `FINANCEWOLF_API_KEY`. The
-product is Ironfang Finance; nothing else about the package changed.
-
-Install the reviewed wheel, or from this checkout:
-
 ```sh
-python3 -m pip install ./sdk/financewolf/python
+pip install ironfang-finance
 ```
 
+The old names still work for now: `import ironfang_financewolf` (with a
+deprecation warning), the `Financewolf` and `FinancewolfError` classes, the
+`financewolf` command and the `FINANCEWOLF_API_KEY` variable, which the CLI
+reads when `IRONFANG_API_KEY` is not set.
+
 Provide an Ironfang key with `finance:einvoices:write` using your secret
-manager or `FINANCEWOLF_API_KEY`. Never commit a key or pass it as a CLI argument.
+manager or `IRONFANG_API_KEY`. Never commit a key or pass it as a CLI argument.
 
 ```python
 import os
 from pathlib import Path
-from ironfang_financewolf import Financewolf, FinancewolfError
+from ironfang_finance import IronfangFinance, IronfangFinanceError
 
-client = Financewolf(os.environ["FINANCEWOLF_API_KEY"])
+client = IronfangFinance(os.environ["IRONFANG_API_KEY"])
 result = client.validate(
     Path("invoice.xml").read_bytes(),
     ruleset="fwrs_bis3_billing_invoice_2026_5_r5",
@@ -32,7 +31,7 @@ print(result["outcome"])
 
 `validate` takes bytes and returns the structured result for `valid` or `invalid`.
 Client, HTTP, transport and indeterminate/malformed response failures raise
-`FinancewolfError`, with a safe `code` and optional HTTP `status`. It verifies
+`IronfangFinanceError`, with a safe `code` and optional HTTP `status`. It verifies
 response hash, length, completed layers and the selected immutable ruleset.
 It never changes the document. `latest` defaults to the active detected ruleset;
 pin a type-specific ID for reproducible CI. A ruleset's lifecycle may later
@@ -65,7 +64,7 @@ for finding in result["findings"]:
   for, both engines for a PDF, and layers consistent with the outcome.
   `coverage.not_checked` states what a verdict does not establish, such as
   the visible PDF matching its XML.
-- A refusal or indeterminate answer raises `FinancewolfError` with
+- A refusal or indeterminate answer raises `IronfangFinanceError` with
   `problem` set to the API's code (for example `family_mismatch`,
   `no_embedded_invoice` or `validation_timeout`) and `request_id` for
   support. The problem's other text is never kept.
@@ -90,11 +89,11 @@ verdict = client.result_v2(job["operation_id"])
 ## CLI
 
 ```sh
-financewolf validate 'invoices/**/*.xml' --ruleset fwrs_bis3_billing_invoice_2026_5_r5 --output invoice-results.json
-financewolf validate credit-notes --ruleset fwrs_bis3_billing_creditnote_2026_5_r5 --output credit-results.json
-financewolf validate e-invoices --api v2 --ruleset latest --output e-invoice-results.json
-financewolf validate 'zugferd/*.pdf' --api v2 --family zugferd-facturx --ruleset latest --output zugferd-results.json
-# Equivalent: python3 -m ironfang_financewolf validate ...
+ironfang-finance validate 'invoices/**/*.xml' --ruleset fwrs_bis3_billing_invoice_2026_5_r5 --output invoice-results.json
+ironfang-finance validate credit-notes --ruleset fwrs_bis3_billing_creditnote_2026_5_r5 --output credit-results.json
+ironfang-finance validate e-invoices --api v2 --ruleset latest --output e-invoice-results.json
+ironfang-finance validate 'zugferd/*.pdf' --api v2 --family zugferd-facturx --ruleset latest --output zugferd-results.json
+# Equivalent: python3 -m ironfang_finance validate ...
 ```
 
 `--api v2` validates through V2: directories select `*.pdf` as well as

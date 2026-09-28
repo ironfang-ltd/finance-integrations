@@ -1,4 +1,5 @@
-bca3b3b11fc9674a1572ab8ef4c815dd3ccea82f321a02f2a6925612e81c577e  BUILD.json
-690c7b23172198ab709d0c731669dfa255388b87a3f78329a95561d760715472  financewolf-action-source-0.2.1.tar.gz
-3545c947a2ee3d3c93b8a1af08eb62a98ff1d816b3398e61c2fde8b5ff76af49  ironfang-financewolf-0.2.1.tgz
-15c45ece195b121bc03e0b0d054a64dee222cfdfad9e095dd986514ef9f64ad9  ironfang_financewolf-0.2.1-py3-none-any.whl
+63fbdf12301defe6f7c5cfbc96d2051c23c678e29e1860990cb461846383f53b  BUILD.json
+b07fa54d8e42506661bc3d94377997cfc0278b6f63fb393d076b218c4b1948df  README.md
+9195edf150d4f45892c71fd928103f788f84b55df75e06b3f6816d3cc515a32c  finance-action-source-1.0.0.tar.gz
+b2a30598bedf8575d8ee8902dcbb1e236368bff0ab0f7313cb344e5f36738f47  ironfang-finance-1.0.0.tgz
+73ca9978028e5c59b13c270112ac09ee35fd713f5bf5bd5be1ca5f202605ecc8  ironfang_finance-1.0.0-py3-none-any.whl

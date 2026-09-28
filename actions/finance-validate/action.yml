@@ -32,12 +32,12 @@ runs:
     - id: validate
       shell: bash
       env:
-        FW_ACTION_FILES: ${{ inputs.files }}
-        FW_ACTION_KEY: ${{ inputs.api-key }}
-        FW_ACTION_RULESET: ${{ inputs.ruleset }}
-        FW_ACTION_API: ${{ inputs.api-version }}
-        FW_ACTION_FAMILY: ${{ inputs.family }}
-        FW_ACTION_VARIANT: ${{ inputs.variant }}
-        FW_ACTION_SCOPE: ${{ inputs.scope }}
-        FW_ACTION_SCRIPT: ${{ github.action_path }}/validate.py
-      run: python3 -I "$FW_ACTION_SCRIPT"
+        FINANCE_ACTION_FILES: ${{ inputs.files }}
+        FINANCE_ACTION_KEY: ${{ inputs.api-key }}
+        FINANCE_ACTION_RULESET: ${{ inputs.ruleset }}
+        FINANCE_ACTION_API: ${{ inputs.api-version }}
+        FINANCE_ACTION_FAMILY: ${{ inputs.family }}
+        FINANCE_ACTION_VARIANT: ${{ inputs.variant }}
+        FINANCE_ACTION_SCOPE: ${{ inputs.scope }}
+        FINANCE_ACTION_SCRIPT: ${{ github.action_path }}/validate.py
+      run: python3 -I "$FINANCE_ACTION_SCRIPT"

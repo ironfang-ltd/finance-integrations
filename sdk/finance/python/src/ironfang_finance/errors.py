@@ -2,10 +2,10 @@
 
 import urllib.request
 
-VERSION = "0.2.1"
+VERSION = "1.0.0"
 
 
-class FinancewolfError(Exception):
+class IronfangFinanceError(Exception):
     """A client/service failure, never an invalid invoice verdict.
 
     ``problem`` and ``request_id`` are set when the API answered with an
