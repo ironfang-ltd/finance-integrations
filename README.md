@@ -1,7 +1,7 @@
 # Financewolf integrations
 
 Official Ironfang Finance (Financewolf) validation SDKs, Python CLI and GitHub
-Action, version 0.2.0. They submit exact invoice bytes to the Ironfang Finance
+Action, version 0.2.1. They submit exact invoice bytes to the Ironfang Finance
 API: UBL Peppol BIS Billing 3 through V1, and through V2 also XRechnung 3.0.2
 (UBL or CII) and ZUGFeRD 2.5.2 / Factur-X 1.09.2 as XML or as a PDF with its
 embedded invoice XML. The registered validation artefacts determine the
@@ -9,25 +9,25 @@ outcome; clients check response integrity and the chosen ruleset.
 
 ## Install
 
-Install the TypeScript/JavaScript SDK from
-[npm](https://www.npmjs.com/package/@ironfang/financewolf):
+Download the packages and `SHA256SUMS` from the
+[v0.2.1 release](https://github.com/ironfang-ltd/financewolf-integrations/releases/tag/v0.2.1)
+and verify each against its SHA-256 entry before installing it:
 
 ```sh
-npm install @ironfang/financewolf@0.2.0
+npm install ./ironfang-financewolf-0.2.1.tgz
+python3 -m pip install ./ironfang_financewolf-0.2.1-py3-none-any.whl
 ```
 
-For Python, download the wheel and `SHA256SUMS` from the
-[v0.2.0 release](https://github.com/ironfang-ltd/financewolf-integrations/releases/tag/v0.2.0).
-Verify the wheel against its SHA-256 entry before installing it:
-
-```sh
-python3 -m pip install ./ironfang_financewolf-0.2.0-py3-none-any.whl
-```
+0.2.1 calls the API at `api.ironfang.com`, where Ironfang moved on
+28 September 2026. Earlier versions call `api.ironfang.uk`, which now
+redirects to it; the Python client refuses the redirect and the
+TypeScript client loses the API key on it, so upgrade. npm publication of 0.2.1 follows this release; until then
+[npm](https://www.npmjs.com/package/@ironfang/financewolf) has 0.2.0.
 
 Python requires 3.10+; the TypeScript/JavaScript client requires Node 20+ ESM.
-Neither package has runtime dependencies. The npm registry tarball matches the
-reviewed GitHub release asset exactly; anonymous installation and the registry
-signature are verified. PyPI registry availability is not claimed.
+Neither package has runtime dependencies. Each npm release is published from
+the reviewed GitHub release asset, byte for byte. PyPI registry availability
+is not claimed.
 
 Set `FINANCEWOLF_API_KEY` through your secret manager using a key scoped to
 `finance:einvoices:write`.
@@ -70,7 +70,7 @@ jobs:
         with:
           persist-credentials: false
       - id: invoices
-        uses: ironfang-ltd/financewolf-integrations/actions/financewolf-validate@v0.2.0
+        uses: ironfang-ltd/financewolf-integrations/actions/financewolf-validate@v0.2.1
         with:
           files: invoices/**/*.xml
           ruleset: fwrs_bis3_billing_invoice_2026_5_r5

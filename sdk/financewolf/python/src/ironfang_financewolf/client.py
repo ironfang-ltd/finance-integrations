@@ -11,7 +11,7 @@ import urllib.request
 from .errors import VERSION, FinancewolfError, NoRedirect
 from .v2 import MAX_RESPONSE, MAX_XML, V2Methods
 
-API = "https://api.ironfang.uk/finance/v1/einvoices"
+API = "https://api.ironfang.com/finance/v1/einvoices"
 LAYERS = ["input", "xml", "xsd", "en16931", "peppol"]
 
 

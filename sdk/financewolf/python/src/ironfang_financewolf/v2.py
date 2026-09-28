@@ -17,7 +17,7 @@ import urllib.request
 
 from .errors import VERSION, FinancewolfError
 
-API_V2 = "https://api.ironfang.uk/finance/v2/einvoices"
+API_V2 = "https://api.ironfang.com/finance/v2/einvoices"
 MAX_XML = 5 << 20
 MAX_PDF = 20 << 20
 MAX_RESPONSE = 4 << 20

@@ -1,6 +1,6 @@
 # Ironfang Finance Python client and CLI
 
-Review candidate **0.2.0**, Python 3.10+, no runtime dependencies. This package
+Review candidate **0.2.1**, Python 3.10+, no runtime dependencies. This package
 calls the Ironfang Finance HTTPS API; PHIVE and registered artefacts determine
 the validation outcome. It performs no local invoice/business-rule validation.
 

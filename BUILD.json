@@ -1,6 +1,6 @@
 {
-  "version": "0.2.0",
-  "source_commit": "6554fe3cc3266718dfcfc947cd6e2681a0b183f5",
+  "version": "0.2.1",
+  "source_commit": "b8a979d0d8663a7dc44555810dbd6ebc9fb0dc22",
   "dirty": false,
   "action_allowlist": [
     "actions/financewolf-validate/action.yml",
