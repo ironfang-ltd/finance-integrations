@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0",
+  "version": "2.1.0",
   "repository": "ironfang-ltd/finance-integrations",
-  "source_commit": "a1956759cb6b1aa1316e097064dfc932860460f7",
+  "source_commit": "4f6466ac20bfcd42877d204ba8590c4a6a588fe1",
   "dirty": false,
   "action_allowlist": [
     "actions/finance-validate/action.yml",
@@ -15,7 +15,6 @@
     "sdk/finance/python/src/ironfang_finance/errors.py",
     "sdk/finance/python/src/ironfang_finance/runner.py",
     "sdk/finance/python/src/ironfang_finance/v2.py",
-    "sdk/finance/python/src/ironfang_financewolf/__init__.py",
     "sdk/finance/python/LICENSE",
     "sdk/finance/python/README.md",
     "sdk/finance/python/pyproject.toml",

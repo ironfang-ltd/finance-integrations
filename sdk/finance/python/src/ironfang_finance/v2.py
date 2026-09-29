@@ -78,6 +78,11 @@ _SHA256 = re.compile(r"[0-9a-f]{64}")
 _IDEMPOTENCY = re.compile(r"[A-Za-z0-9_-]{8,128}")
 _PROBLEM_CODE = re.compile(r"[a-z_]{1,64}")
 _REQUEST_ID = re.compile(r"[A-Za-z0-9_-]{8,64}")
+_PRODUCT = re.compile(r"[a-z]{1,32}")
+_METER = re.compile(r"[a-z0-9_.]{1,64}")
+_RFC3339 = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})")
+_SECONDS = re.compile(r"[0-9]{1,6}")
+MAX_RETRY_AFTER = 86400
 
 
 def media_type_of(document, media_type=None):
@@ -599,12 +604,17 @@ def _job_body(document, media_type, ruleset, family, variant, document_type, sco
 
 
 def _http_error(exc):
-    """The API's problem code and request id, when both are well formed.
+    """The API's problem code and request id, and for a billing refusal the
+    product, meter and allowance renewal, each only when well formed; with the
+    Retry-After the API asked for.
 
     Nothing else from the response is kept: a body can quote the request.
     """
-    problem = request_id = None
+    details = {}
     try:
+        header = (exc.headers.get("Retry-After") or "").strip()
+        if _SECONDS.fullmatch(header) and int(header) <= MAX_RETRY_AFTER:
+            details["retry_after"] = int(header)
         if (exc.headers.get("Content-Type") or "").split(";")[0].strip() == (
             "application/problem+json"
         ):
@@ -612,13 +622,24 @@ def _http_error(exc):
             doc = json.loads(raw) if len(raw) <= MAX_PROBLEM else {}
             code, rid = doc.get("code"), doc.get("request_id")
             if isinstance(code, str) and _PROBLEM_CODE.fullmatch(code):
-                problem = code
+                details["problem"] = code
             if isinstance(rid, str) and _REQUEST_ID.fullmatch(rid):
-                request_id = rid
+                details["request_id"] = rid
+            billing = doc.get("billing")
+            if isinstance(billing, dict):
+                for key, name, pattern in (
+                    ("product", "product", _PRODUCT),
+                    ("meter", "meter", _METER),
+                    ("reset_at", "reset_at", _RFC3339),
+                ):
+                    value = billing.get(key)
+                    if isinstance(value, str) and pattern.fullmatch(value):
+                        details[name] = value
+            wait = doc.get("retry_after_seconds")
+            if type(wait) is int and 0 < wait <= MAX_RETRY_AFTER:
+                details["retry_after"] = wait
     except (OSError, ValueError, TypeError, AttributeError, RecursionError):
         pass
     finally:
         exc.close()
-    return IronfangFinanceError(
-        "api_http_error", status=exc.code, problem=problem, request_id=request_id
-    )
+    return IronfangFinanceError("api_http_error", status=exc.code, **details)

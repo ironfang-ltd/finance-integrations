@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 
 from .errors import VERSION, IronfangFinanceError, NoRedirect
-from .v2 import MAX_RESPONSE, MAX_XML, V2Methods
+from .v2 import MAX_RESPONSE, MAX_XML, V2Methods, _http_error
 
 API = "https://api.ironfang.com/finance/v1/einvoices"
 LAYERS = ["input", "xml", "xsd", "en16931", "peppol"]
@@ -116,8 +116,7 @@ class IronfangFinance(V2Methods):
                     raise IronfangFinanceError("invalid_api_response")
                 result = json.loads(body)
         except urllib.error.HTTPError as exc:
-            exc.close()
-            raise IronfangFinanceError("api_http_error", status=exc.code) from None
+            raise _http_error(exc) from None
         except (OSError, ValueError, TypeError, RecursionError):
             raise IronfangFinanceError("api_request_failed") from None
         return check_result(result, xml, ruleset)

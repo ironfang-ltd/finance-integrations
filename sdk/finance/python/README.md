@@ -8,10 +8,12 @@ the validation outcome. It performs no local invoice/business-rule validation.
 pip install ironfang-finance
 ```
 
-The old names still work for now: `import ironfang_financewolf` (with a
-deprecation warning), the `Financewolf` and `FinancewolfError` classes, the
-`financewolf` command and the `FINANCEWOLF_API_KEY` variable, which the CLI
-reads when `IRONFANG_API_KEY` is not set.
+2.0.0 removed the launch-era names: the `ironfang_financewolf` module, the
+`Financewolf` and `FinancewolfError` classes, the `financewolf` command and the
+`FINANCEWOLF_API_KEY` variable. Use `ironfang_finance`, `IronfangFinance`,
+`ironfang-finance` and `IRONFANG_API_KEY`. 2.1.0 follows Ironfang's unified
+billing: V1 errors carry the API's `problem` code too, and billing refusals add
+`product`, `meter`, `reset_at` and `retry_after`.
 
 Provide an Ironfang key with `finance:einvoices:write` using your secret
 manager or `IRONFANG_API_KEY`. Never commit a key or pass it as a CLI argument.
@@ -31,7 +33,8 @@ print(result["outcome"])
 
 `validate` takes bytes and returns the structured result for `valid` or `invalid`.
 Client, HTTP, transport and indeterminate/malformed response failures raise
-`IronfangFinanceError`, with a safe `code` and optional HTTP `status`. It verifies
+`IronfangFinanceError`, with a safe `code`, optional HTTP `status` and, when the
+API answered with a problem, its `problem` code and `request_id`. It verifies
 response hash, length, completed layers and the selected immutable ruleset.
 It never changes the document. `latest` defaults to the active detected ruleset;
 pin a type-specific ID for reproducible CI. A ruleset's lifecycle may later
@@ -86,6 +89,26 @@ job = client.wait_for_job_v2(job["id"], timeout=300)
 verdict = client.result_v2(job["operation_id"])
 ```
 
+## Usage and billing refusals
+
+Validations count against your organisation's Ironfang billing account, shared
+by every Ironfang product and managed in Billing in the
+[Ironfang portal](https://portal.ironfang.com). Each meter has a monthly free
+allowance; beyond it, usage is pay-as-you-go once paid usage is enabled. An
+authenticated V2 verdict's `usage` is `{"charged", "credits"}`: `charged` is
+true, and `credits` 1, when the rules ran and the validation counted.
+
+When the billing account refuses a validation, nothing is validated or counted
+and the error's `problem` is one of `free_allowance_exhausted`,
+`account_budget_exhausted`, `product_budget_exhausted`,
+`exemption_limit_reached`, `paid_usage_paused`, `payment_required`,
+`payment_action_required`, `account_restricted`, `product_not_eligible`,
+`account_closed`, `operation_too_large` or `billing_temporarily_unavailable`.
+The error then also carries `product`, `meter` and, for a free allowance,
+`reset_at`. Only `billing_temporarily_unavailable` clears by itself, after
+`retry_after` seconds; the rest are resolved in Billing or when the month rolls
+over.
+
 ## CLI
 
 ```sh
@@ -123,7 +146,8 @@ response limit. Redirects are refused. There
 are no automatic retries or idempotency keys: a new run/call may be a new billable
 operation, even if an earlier response was lost. A timeout does not cancel work
 already accepted by the API. Do not retry automatically on 429/5xx without
-accounting for that behaviour.
+accounting for that behaviour. A billing refusal is recorded as an error with
+its `problem` code, for example `free_allowance_exhausted`.
 
 The report schema remains `financewolf/action-results/v1`, shared with the
 GitHub Action: totals, valid/invalid/error counts and per-file results. Full

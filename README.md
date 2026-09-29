@@ -1,7 +1,7 @@
 # Ironfang Finance integrations
 
 Official Ironfang Finance validation SDKs, Python CLI and GitHub Action,
-version 1.0.0. They submit exact invoice bytes to the Ironfang Finance
+version 2.1.0. They submit exact invoice bytes to the Ironfang Finance
 API: UBL Peppol BIS Billing 3 through V1, and through V2 also XRechnung 3.0.2
 (UBL or CII) and ZUGFeRD 2.5.2 / Factur-X 1.09.2 as XML or as a PDF with its
 embedded invoice XML. The registered validation artefacts determine the
@@ -10,21 +10,25 @@ outcome; clients check response integrity and the chosen ruleset.
 ## Install
 
 ```sh
-npm install @ironfang/finance@1.0.0
-pip install ironfang-finance==1.0.0
+npm install @ironfang/finance@2.1.0
+pip install ironfang-finance==2.1.0
 ```
 
 The same files are on the
-[v1.0.0 release](https://github.com/ironfang-ltd/finance-integrations/releases/tag/v1.0.0);
+[v2.1.0 release](https://github.com/ironfang-ltd/finance-integrations/releases/tag/v2.1.0);
 verify each against `SHA256SUMS` before installing it.
 
 Python requires 3.10+; the TypeScript/JavaScript client requires Node 20+ ESM.
 Neither package has runtime dependencies.
 
 These packages were called `@ironfang/financewolf` and `ironfang-financewolf`
-up to 0.2.1. The old class names (`Financewolf`, `FinancewolfError`), the
-Python module `ironfang_financewolf`, the `financewolf` command and the
-`FINANCEWOLF_API_KEY` variable still work in 1.0.0 and are deprecated.
+up to 0.2.1. 2.0.0 removed the old class names (`Financewolf`,
+`FinancewolfError`), the Python module `ironfang_financewolf`, the
+`financewolf` command and the `FINANCEWOLF_API_KEY` variable. 2.1.0 follows
+Ironfang's unified billing: a V1 error now carries the API's problem code as
+well, a billing refusal adds the product, meter, allowance renewal and
+Retry-After. A V2 verdict's `usage` carries `remaining` and `period_ends_at`
+only on results recorded before usage billing.
 
 ## CLI
 
@@ -67,7 +71,7 @@ jobs:
         with:
           persist-credentials: false
       - id: invoices
-        uses: ironfang-ltd/finance-integrations/actions/finance-validate@v1.0.0
+        uses: ironfang-ltd/finance-integrations/actions/finance-validate@v2.1.0
         with:
           files: invoices/**/*.xml
           ruleset: fwrs_bis3_billing_invoice_2026_5_r5
@@ -99,7 +103,10 @@ Requests are limited to 5 MiB XML, 4 MiB response and a default 30-second timeou
 a V2 PDF may be up to 20 MiB with a 45-second default. There are no automatic
 retries. V2 calls accept an idempotency key, so a repeated call replays the
 first result instead of charging again; without one, repeat calls can be
-billable, and a timeout does not undo work already accepted. Keys belong in secrets, never
+billable, and a timeout does not undo work already accepted. Validations count
+against your organisation's Ironfang billing account, which has a monthly free
+allowance; when it refuses one, nothing is validated and the error carries the
+API's code, such as `free_allowance_exhausted`. Keys belong in secrets, never
 in command arguments. JSON reports can contain invoice information: restrict
 access and retention. Annotations print bounded rule IDs rather than invoice text.
 

@@ -74,7 +74,9 @@ globs. Duplicate paths run once; empty/unmatched selections and resolved paths
 outside the workspace fail. Exact bytes are submitted, capped at 5 MiB per file
 (20 MiB for a V2 PDF), with a 30-second HTTP timeout (45 for a V2 PDF).
 Redirects are refused. There are no automatic retries or idempotency keys:
-rerunning can be another billable validation.
+rerunning can be another billable validation. A billing refusal, such as
+`free_allowance_exhausted`, is an error whose annotation and report item carry
+that code, through V1 or V2; nothing was validated or counted.
 
 Exit **0** means all valid, **1** means invalid, **2** means input/configuration,
 HTTP/transport or response-integrity error. All nonzero codes fail the workflow;

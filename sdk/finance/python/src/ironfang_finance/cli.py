@@ -1,4 +1,4 @@
-"""API-backed validation CLI. Keys come only from IRONFANG_API_KEY (or the older FINANCEWOLF_API_KEY)."""
+"""API-backed validation CLI. Keys come only from IRONFANG_API_KEY."""
 
 import argparse
 import json
@@ -63,7 +63,7 @@ def main(argv=None):
         # Reserve the output before making billable calls, but after selection
         # so a report name matching the glob cannot become an invoice input.
         files = files_in(args.workspace, args.files, args.api)
-        client = IronfangFinance(os.environ.get("IRONFANG_API_KEY") or os.environ.get("FINANCEWOLF_API_KEY", ""))
+        client = IronfangFinance(os.environ.get("IRONFANG_API_KEY", ""))
         fd = os.open(args.output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     except (OSError, IronfangFinanceError) as exc:
         print(
